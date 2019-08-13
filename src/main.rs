@@ -1,8 +1,8 @@
 mod controllers;
 mod routes;
-use actix_service::Service;
+mod utils;
+mod middlewares;
 use actix_web::{web, App, HttpResponse, HttpServer};
-use futures::future::Future;
 use listenfd::ListenFd;
 
 fn main() {
