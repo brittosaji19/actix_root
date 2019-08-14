@@ -4,6 +4,8 @@ mod utils;
 mod middlewares;
 use actix_web::{web, App, HttpResponse, HttpServer};
 use listenfd::ListenFd;
+#[macro_use]
+extern crate serde;
 
 fn main() {
     let mut listenfd = ListenFd::from_env();

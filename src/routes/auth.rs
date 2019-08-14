@@ -6,7 +6,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/auth")
             //TEMPORARILY DISABLED FOR JWT IMPLEMENTATION
-            // .wrap(middlewares::authenticate::Authenticator)
+            .wrap(middlewares::authenticate::Authenticator)
             .route(
                 "/login",
                 web::get().to(|| HttpResponse::Ok().body("Welcome to Login route")),

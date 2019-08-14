@@ -1,3 +1,4 @@
+use super::super::controllers::auth;
 use actix_service::{Service, Transform};
 use actix_web::{dev::ServiceRequest, dev::ServiceResponse, Error};
 use actix_web::{http, HttpResponse};
@@ -49,8 +50,13 @@ where
     }
 
     fn call(&mut self, req: ServiceRequest) -> Self::Future {
-        println!("Hi from start. You requested: {}", req.path());
-
+        let access_token = req.headers().get("x-access-token").unwrap();
+        println!(
+            "Hi from start. You requested: {:?}",
+            access_token.to_str().unwrap()
+        );
+        let token_data = auth::decode_token(access_token.to_str().unwrap()).unwrap();
+        println!("{:?}", token_data.claims);
         Either::B(ok(req.into_response(
             HttpResponse::Found()
                 .header(http::header::LOCATION, "/")
