@@ -55,13 +55,22 @@ where
             "Hi from start. You requested: {:?}",
             access_token.to_str().unwrap()
         );
-        let token_data = auth::decode_token(access_token.to_str().unwrap()).unwrap();
-        println!("{:?}", token_data.claims);
-        Either::B(ok(req.into_response(
-            HttpResponse::Found()
-                .header(http::header::LOCATION, "/")
-                .finish()
-                .into_body(),
-        )))
+        let token_data = auth::decode_token(access_token.to_str().unwrap());
+        println!("{:?}", token_data);
+        if token_data.is_ok() {
+            println!("Token Verification Successful!");
+        } else {
+            return Either::B(ok(
+                req.into_response(HttpResponse::Unauthorized().finish().into_body())
+            ));
+        }
+        println!("{:?}", token_data.unwrap().claims);
+        // Either::B(ok(req.into_response(
+        //     HttpResponse::Found()
+        //         .header(http::header::LOCATION, "/")
+        //         .finish()
+        //         .into_body(),
+        // )))
+        Either::A(self.service.call(req))
     }
 }

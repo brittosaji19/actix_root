@@ -15,11 +15,10 @@ pub fn signup() -> impl Responder {
     let hash_response = encrypt::generate_hash("hello".to_string());
     let hash_verify = encrypt::verify_hash("hello".to_string(), &hash_response);
     create_and_register_token("cat");
-    response_templates::unauthorized_request()
-    // HttpResponse::Ok().body(format!(
-    //     "You have reached the signup endpoint and your key is {} verification  {}",
-    //     hash_response, hash_verify
-    // ))
+    HttpResponse::Ok().body(format!(
+        "You have reached the signup endpoint and your key is {} verification  {}",
+        hash_response, hash_verify
+    ))
 }
 
 pub fn create_and_register_token(id: &str) -> String {
