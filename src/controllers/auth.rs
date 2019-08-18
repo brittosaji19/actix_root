@@ -1,13 +1,14 @@
 use super::super::utils::{constants, encrypt, response_templates};
 use actix_web::{web, HttpResponse, Responder};
 extern crate jsonwebtoken;
+extern crate serde_json;
 use serde::Deserialize;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     id: String,
     exp: usize,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Credentials {
     email: String,
     password: String,
@@ -31,10 +32,12 @@ pub fn signup() -> impl Responder {
 //Basic login function that should return a JSON response containing a success status and an access_token
 //TODO full functionality not yet implemented
 pub fn login(cred: web::Json<Credentials>) -> impl Responder {
-    HttpResponse::Ok().body(format!(
-        "You have reached the login endpoint email : {} password: : {} hash : {}",
-        cred.email, cred.password,encrypt::generate_hash(cred.password.to_owned())
-    ))
+    // HttpResponse::Ok().body(format!(
+    //     "You have reached the login endpoint email : {} password: : {} hash : {}",
+    //     cred.email, cred.password,encrypt::generate_hash(cred.password.to_owned())
+    // ))
+    let cred_t: Credentials = cred.into_inner();
+    response_templates::data(serde_json::to_value(cred_t).unwrap())
 }
 
 //Creates a JSON Web Token byt taking a user id as a parameter and creating a User Struct with id value that was passed into the function
