@@ -1,7 +1,11 @@
 mod controllers;
 mod routes;
 mod utils;
+mod models;
 mod middlewares;
+mod schema;
+#[macro_use]
+extern crate diesel;
 use actix_web::{web, App, HttpResponse, HttpServer};
 use listenfd::ListenFd;
 #[macro_use]

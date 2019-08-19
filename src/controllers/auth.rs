@@ -1,10 +1,13 @@
+use super::super::models;
 use super::super::utils::{constants, encrypt, response_templates};
 use actix_web::{web, HttpResponse, Responder};
 extern crate jsonwebtoken;
 extern crate serde_json;
 use serde::Deserialize;
+use uuid::Uuid;
+
 #[derive(Debug, Serialize, Deserialize)]
-pub struct User {
+pub struct UserToken {
     id: String,
     exp: usize,
 }
@@ -13,21 +16,34 @@ pub struct Credentials {
     email: String,
     password: String,
 }
+#[derive(Deserialize, Serialize, Debug)]
+pub struct SessionInfo {
+    user: models::user::User,
+    access_token: String,
+}
 pub fn ack() -> impl Responder {
     HttpResponse::Ok().body("Welcome to auth controller")
 }
 
 //Basic signup function that should return a JSON response containing a success status and an access_token
 //TODO full functionality not yet implemented
-pub fn signup() -> impl Responder {
+pub fn signup(cred: web::Json<models::user::NewUser>) -> impl Responder {
     //TEMPORARY IMPLEMENTATION FOR TESTING
-    let hash_response = encrypt::generate_hash("hello".to_string());
-    let hash_verify = encrypt::verify_hash("hello".to_string(), &hash_response);
+    let hash_response = encrypt::generate_hash(cred.password.to_string());
+    let _hash_verify = encrypt::verify_hash("hello".to_string(), &hash_response);
     create_and_register_token("cat");
-    HttpResponse::Ok().body(format!(
-        "You have reached the signup endpoint and your key is {} verification  {}",
-        hash_response, hash_verify
-    ))
+    let user = models::user::create_user(
+        &models::establish_connection(),
+        cred.name.to_owned(),
+        cred.email.to_owned(),
+        hash_response.to_owned(),
+    );
+    let response = SessionInfo {
+        user: user.clone(),
+        access_token: create_and_register_token(user.id.to_string().as_ref()),
+    };
+    println!("{:?}", response);
+    response_templates::data(serde_json::to_value(&response).unwrap())
 }
 //Basic login function that should return a JSON response containing a success status and an access_token
 //TODO full functionality not yet implemented
@@ -50,7 +66,7 @@ pub fn create_and_register_token(id: &str) -> String {
         .duration_since(std::time::SystemTime::UNIX_EPOCH)
         .unwrap()
         .as_millis();
-    let current_user = User {
+    let current_user = UserToken {
         id: id.to_owned(),
         exp: expiry as usize,
     };
@@ -66,10 +82,10 @@ pub fn create_and_register_token(id: &str) -> String {
 //The JWTSECRET used while generating the token is supplied as key to accurately decrypt the token
 pub fn decode_token(
     token: &str,
-) -> Result<jsonwebtoken::TokenData<User>, jsonwebtoken::errors::Error> {
+) -> Result<jsonwebtoken::TokenData<UserToken>, jsonwebtoken::errors::Error> {
     let jwt_secret = constants::JWT_SECRET;
     let key: &[u8] = jwt_secret.as_ref();
-    let token_data = jsonwebtoken::decode::<User>(
+    let token_data = jsonwebtoken::decode::<UserToken>(
         &token,
         key,
         &jsonwebtoken::Validation {
