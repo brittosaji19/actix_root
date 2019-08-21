@@ -24,7 +24,7 @@ systemfd --no-pid -s http::3000 -- cargo watch -x run //Run with auto-reload
 ```
 cargo install diesel_cli
 ```
-- For Postgres featurs only
+- For Postgres features only
   
 ```
 cargo install diesel_cli --no-default-features --features postgres
