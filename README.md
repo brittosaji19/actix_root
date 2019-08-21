@@ -9,7 +9,7 @@ A quick start mvc base project for Actix web-framework for Rust
     - Cargo (Package manager for rust)
     - Diesel ORM ()
     - systemfd and cargo-watch (Required for Auto Reloading)
-  - `cargo installsystemfd cargo-watch `
+  - `cargo install systemfd cargo-watch `
   
 ### Initializing project
 
