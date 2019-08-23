@@ -53,6 +53,16 @@ pub fn login(cred: web::Json<Credentials>) -> impl Responder {
     //     cred.email, cred.password,encrypt::generate_hash(cred.password.to_owned())
     // ))
     let cred_t: Credentials = cred.into_inner();
+    let db_response =
+        models::user::get_user(&models::establish_connection(), cred_t.email.to_owned());
+    if db_response.is_err() {
+        return response_templates::error(400, "Invalid Email".to_string());
+    }
+    println!("User :: {:?}", db_response);
+    let fetched_user = db_response.unwrap();
+    let verify_hash =
+        encrypt::verify_hash(cred_t.password.to_owned(), fetched_user.password.as_ref());
+    println!("{:?}", verify_hash);
     response_templates::data(serde_json::to_value(cred_t).unwrap())
 }
 
