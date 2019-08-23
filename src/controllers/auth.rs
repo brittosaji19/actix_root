@@ -4,7 +4,6 @@ use actix_web::{web, HttpResponse, Responder};
 extern crate jsonwebtoken;
 extern crate serde_json;
 use serde::Deserialize;
-use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserToken {
@@ -48,10 +47,6 @@ pub fn signup(cred: web::Json<models::user::NewUser>) -> impl Responder {
 //Basic login function that should return a JSON response containing a success status and an access_token
 //TODO full functionality not yet implemented
 pub fn login(cred: web::Json<Credentials>) -> impl Responder {
-    // HttpResponse::Ok().body(format!(
-    //     "You have reached the login endpoint email : {} password: : {} hash : {}",
-    //     cred.email, cred.password,encrypt::generate_hash(cred.password.to_owned())
-    // ))
     let cred_t: Credentials = cred.into_inner();
     let db_response =
         models::user::get_user(&models::establish_connection(), cred_t.email.to_owned());
@@ -63,7 +58,10 @@ pub fn login(cred: web::Json<Credentials>) -> impl Responder {
     let verify_hash =
         encrypt::verify_hash(cred_t.password.to_owned(), fetched_user.password.as_ref());
     println!("{:?}", verify_hash);
-    response_templates::data(serde_json::to_value(cred_t).unwrap())
+    if !verify_hash {
+        return response_templates::error(401, String::from("Invalid Credentials"));
+    }
+    response_templates::data(serde_json::to_value(SessionInfo { user: fetched_user.clone(),access_token:create_and_register_token(fetched_user.id.to_string().as_ref()),}).unwrap())
 }
 
 //Creates a JSON Web Token byt taking a user id as a parameter and creating a User Struct with id value that was passed into the function
