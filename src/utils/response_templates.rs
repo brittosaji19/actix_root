@@ -15,13 +15,12 @@ struct DataTemplate<T> {
         data: T,
 }
 #[derive(Serialize, Deserialize)]
-struct ErrorTemplate{
+struct ErrorTemplate {
         status: i32,
-        error:String ,
+        error: String,
 }
 //Try using serde_json
-pub fn data(dt: serde_json::Value ) -> HttpResponse {
-
+pub fn data(dt: serde_json::Value) -> HttpResponse {
         // let json_dt=serde_json::
         let data = DataTemplate::<serde_json::Value> {
                 status: 200,
@@ -31,8 +30,7 @@ pub fn data(dt: serde_json::Value ) -> HttpResponse {
                 .header(http::header::CONTENT_TYPE, "application/json")
                 .json(data);
 }
-pub fn error(errorcode:i32,message:String ) -> HttpResponse {
-
+pub fn error(errorcode: i32, message: String) -> HttpResponse {
         let data = ErrorTemplate {
                 status: errorcode,
                 error: message,
@@ -41,4 +39,3 @@ pub fn error(errorcode:i32,message:String ) -> HttpResponse {
                 .header(http::header::CONTENT_TYPE, "application/json")
                 .json(data);
 }
-
